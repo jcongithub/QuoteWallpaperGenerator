@@ -5,44 +5,35 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.imageio.ImageIO;
+
+import com.arc.wallpaper.drawer.OneLineQuoteDrawer;
+import com.arc.wallpaper.drawer.QuoteQrawer;
+import com.arc.wallpaper.drawer.RectangleQuoteDrawer;
 
 public class QuoteWallpaperGenerator {
 	private int width = 1920;
     private int height = 1200;
-    private int margin = 500;
     
     private List<Font> availableFonts = new ArrayList<>();
     private RandomUtil random = new RandomUtil();
-    private final QuoteGenerator quoteGen;
-    private ColorGenerator colorGen = new ColorGenerator();
     
-    public QuoteWallpaperGenerator(QuoteGenerator quoteGen){
-    	this.quoteGen = quoteGen;
+    public QuoteWallpaperGenerator(){
     	//Use desktop screen size as picture size 
     	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();    	
     	this.width = screenSize.width;
     	this.height = screenSize.height;
-    	
-    	initializeFontList();
     }
     
-    public void random(String pathToSave) throws IOException{
-    	Quote quote = quoteGen.random();
-    	System.out.println("Use Quote:" + quote);
-    	generate(quote, pathToSave);
-    }
-    public void generate(Quote quote, String pathToSave) throws IOException{
+    public void generate(Quote quote, QuoteQrawer quoteDrawer, String pathToSave) throws IOException{
 	    // Constructs a BufferedImage of one of the predefined image types.
 	    BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
@@ -54,49 +45,16 @@ public class QuoteWallpaperGenerator {
 	    g2d.fillRect(0, 0, width, height);
 
 
-	    g2d.setColor(colorGen.random());
+	    quoteDrawer.draw(g2d, quote.content);
 	    
-	    Font font = computerFont(bufferedImage, margin, width - margin, quote.content);
-	    
-	    drawQuote(quote, g2d, font, bufferedImage);
-	    
-	    //g2d.setFont(font);	    
-	    //Point startPoint = computerStartPoint(bufferedImage, font, quote.content);
-	    //g2d.drawString(quote.content, startPoint.x, startPoint.y);
-
 	    // Disposes of this graphics context and releases any system resources that it is using. 
 	    g2d.dispose();
-
-	    // Save as PNG
-	    //File file = new File("myimage.png");
-	    //ImageIO.write(bufferedImage, "png", file);
 
 	    // Save as JPEG
 	    File file = new File(pathToSave);
 	    ImageIO.write(bufferedImage, "jpg", file);
     }
     
-    private void drawQuote(Quote quote, Graphics2D g2d, Font font, BufferedImage bi){
-	    
-    	g2d.setFont(font);
-	    
-	    Point startPoint = computerStartPoint(bi, font, quote.content);
-	    g2d.drawString(quote.content, startPoint.x, startPoint.y);
-	    
-	    
-	    if(quote.author != null){
-		    Rectangle2D rec = font.getStringBounds(quote.content, g2d.getFontRenderContext());
-		    double height = rec.getHeight();
-		    
-		    double lineGap = height / 2;
-		    
-		    font = new Font(font.getName(), Font.PLAIN, font.getSize() / 2);
-		    startPoint = computerStartPoint(bi, font, quote.author);
-		    g2d.setFont(font);
-		    g2d.drawString(quote.author, startPoint.x, (int)(startPoint.y + height + lineGap));
-	    	
-	    }
-    }
     
     private Font randomPickFont(){
     	int index = random.randomInt(0, availableFonts.size()); 
@@ -156,19 +114,13 @@ public class QuoteWallpaperGenerator {
     
     
 	public static void main(String[] args) throws IOException {
-		QuoteGenerator quoteGen = new QuoteGenerator();		
-		QuoteWallpaperGenerator generator = new QuoteWallpaperGenerator(quoteGen);
+		Quote quote = new Quote("The best of men cannot suspend their fate. The good die early, and the bad die late.", "Daniel Defoe", null);
+		QuoteQrawer quoteDrawer1 = new RectangleQuoteDrawer(new Rectangle(100, 100, 800, 1000), new Font("Segoe UI Light", Font.PLAIN, 48), Color.WHITE);
+		OneLineQuoteDrawer quoteDrawer2 = new OneLineQuoteDrawer(new Rectangle(100, 100, 800, 1000), new Font("Segoe UI Light", Font.PLAIN, 48), Color.WHITE);
 		
-		List<Quote> quotes = quoteGen.getAllQuotes();
-		
-		for(int i = 0; i < quotes.size(); i++){
-			Quote quote = quotes.get(i);
-			
-			String fileName = "c:\\jianfei\\quote" + i + ".jpg"; 
-			
-			generator.generate(quote, fileName);
-		}
-		
+		QuoteWallpaperGenerator generator = new QuoteWallpaperGenerator();
+		generator.generate(quote, quoteDrawer1, "quote1.jpg");
+		generator.generate(quote, quoteDrawer2, "quote2.jpg");
 	}
 
 }

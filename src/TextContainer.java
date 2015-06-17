@@ -1,10 +1,10 @@
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineBreakMeasurer;
+import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -21,39 +21,26 @@ class TextContainer extends JPanel{
 
 	private int m_width;
     private int m_height;
-    private String m_text;
     private AttributedCharacterIterator m_iterator;
     private int m_start;
     private int m_end;
-
-    public TextContainer(String text, int width, int height)
-    {
-        m_text = text;
+    
+    public TextContainer(String text, int width, int height, Font font){
         m_width = width;
         m_height = height;
 
         AttributedString styledText = new AttributedString(text);
+        styledText.addAttribute(TextAttribute.FONT, font);
         m_iterator = styledText.getIterator();
         m_start = m_iterator.getBeginIndex();
         m_end = m_iterator.getEndIndex();
     }
 
-    public String getText()
-    {
-        return m_text;
-    }
 
-    public Dimension getPreferredSize()
-    {
-        return new Dimension(m_width, m_height);
-    }
-
-    public void paint(Graphics g, Font font)
-    {
+    public void rectanglePain(Graphics g){
         super.paintComponent(g);
 
         Graphics2D g2 = (Graphics2D) g;
-        g2.setFont(font);
         
         FontRenderContext frc = g2.getFontRenderContext();
         LineBreakMeasurer measurer = new LineBreakMeasurer(m_iterator, frc);
@@ -73,7 +60,7 @@ class TextContainer extends JPanel{
         }
     }
     
-    public void paint1(Graphics g){
+    public void circlePain(Graphics g){
         super.paintComponent(g);
 
         Graphics2D g2 = (Graphics2D) g;
@@ -107,7 +94,7 @@ class TextContainer extends JPanel{
     	
     	int width = 800;
     	int height = 1000;
-  
+    	Font font = new Font("Segoe UI Light", Font.PLAIN, 48);
 
     	BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 	    Graphics2D g2d = bufferedImage.createGraphics();
@@ -116,11 +103,11 @@ class TextContainer extends JPanel{
 	    
 	    
 	    g2d.setColor(Color.WHITE);
-	    g2d.setFont(new Font("Segoe UI Light", Font.PLAIN, 12));
 	    
-    	TextContainer container = new TextContainer(text, width, height);
-	    container.paint(g2d, new Font("Segoe UI Light", Font.PLAIN, 9));
+    	TextContainer container = new TextContainer(text, width, height, font);
+	    container.circlePain(g2d);
 	    g2d.dispose();
+	    
 	    File file = new File("quote.jpg");
 	    ImageIO.write(bufferedImage, "jpg", file);
     }
